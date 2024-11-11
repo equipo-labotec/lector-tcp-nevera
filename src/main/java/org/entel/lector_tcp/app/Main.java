@@ -1,8 +1,5 @@
 package org.entel.lector_tcp.app;
 
-import org.entel.lector_tcp.domain.models.Position;
-import org.entel.lector_tcp.app.protocol.WialonProtocolDecoder;
-
 public class Main {
 
     public static void main(String[] args) throws Exception {

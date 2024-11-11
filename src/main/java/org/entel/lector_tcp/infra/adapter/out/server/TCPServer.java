@@ -20,7 +20,7 @@ import java.util.*;
 @AllArgsConstructor
 public class TCPServer implements CommandLineRunner {
 
-    private static final int PORT = 12345;
+    private static final int PORT = 5430;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
     private final DeviceService deviceService;  // Interfaz DeviceService inyectada aquí
     private final Set<Device> authorizedIMEIs = new HashSet<>();
@@ -119,7 +119,7 @@ public class TCPServer implements CommandLineRunner {
                     System.out.println("Error al decodificar el mensaje: " + inputLine);
                 }
             } catch (Exception e) {
-                System.out.println("Error en la decodificación: " + e.getMessage() + e.getLocalizedMessage() + Arrays.toString(e.getStackTrace()));
+                System.out.println("Error en la decodificación");
             }
         }
     }

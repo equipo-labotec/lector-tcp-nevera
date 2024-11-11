@@ -1,22 +1,22 @@
 package org.entel.lector_tcp.infra.seeder;
 
 import org.entel.lector_tcp.infra.adapter.input.entity.DeviceEntity;
-import org.entel.lector_tcp.infra.adapter.input.repository.DeviceEntityRepository;
+import org.entel.lector_tcp.infra.adapter.input.repository.DeviceEntityRepositoryJPA;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RUN_ENTITY implements CommandLineRunner {
 
-    private final DeviceEntityRepository deviceEntityRepository;
+    private final DeviceEntityRepositoryJPA deviceEntityRepositoryJPA;
 
-    public RUN_ENTITY(DeviceEntityRepository deviceEntityRepository) {
-        this.deviceEntityRepository = deviceEntityRepository;
+    public RUN_ENTITY(DeviceEntityRepositoryJPA deviceEntityRepositoryJPA) {
+        this.deviceEntityRepositoryJPA = deviceEntityRepositoryJPA;
     }
 
     @Override
     public void run(String... args) throws Exception {
-        if (deviceEntityRepository.count() == 0){
+        if (deviceEntityRepositoryJPA.count() == 0){
             // Crear los objetos DeviceEntity con base en la información de la imagen
             DeviceEntity device1 = new DeviceEntity(
                     null, // El ID se generará automáticamente
@@ -27,7 +27,7 @@ public class RUN_ENTITY implements CommandLineRunner {
             );
 
             // Guardar los objetos en la base de datos
-            deviceEntityRepository.save(device1);
+            deviceEntityRepositoryJPA.save(device1);
 
             System.out.println("Devices inicializados en la base de datos.");
         }

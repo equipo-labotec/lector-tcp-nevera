@@ -4,16 +4,8 @@ import lombok.AllArgsConstructor;
 import org.entel.lector_tcp.app.helper.Parser;
 import org.entel.lector_tcp.app.helper.PatternBuilder;
 import org.entel.lector_tcp.app.keys.KEYS;
-import org.entel.lector_tcp.app.logic.NeverasDataPacketServiceI;
-import org.entel.lector_tcp.app.mapper.NestleDataPacketMapper;
-import org.entel.lector_tcp.app.ports.input.repository.NeverasRepository;
-import org.entel.lector_tcp.app.ports.out.DeviceService;
-import org.entel.lector_tcp.app.ports.out.NeverasDataPacketService;
-import org.entel.lector_tcp.domain.models.Device;
 import org.entel.lector_tcp.domain.models.Position;
 import org.entel.lector_tcp.app.util.UnitsConverter;
-import org.entel.lector_tcp.infra.adapter.input.entity.NeverasDataPacketEntity;
-import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.LinkedList;

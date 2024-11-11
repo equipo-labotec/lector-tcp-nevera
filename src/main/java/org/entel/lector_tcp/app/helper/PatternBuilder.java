@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class PatternBuilder {
-
     private final ArrayList<String> fragments = new ArrayList<>();
-
     public PatternBuilder optional() {
         return optional(1);
     }
-
     public PatternBuilder optional(int count) {
         fragments.add(fragments.size() - count, "(?:");
         fragments.add(")?");
