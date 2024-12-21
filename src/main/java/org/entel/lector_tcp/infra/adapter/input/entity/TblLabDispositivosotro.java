@@ -118,9 +118,9 @@ public class TblLabDispositivosotro {
     @Column(name = "lab_vch_version", nullable = false, length = 250)
     private String labVchVersion;
 
-    @ColumnDefault("1")
-    @Column(name = "lab_int_idcliente", nullable = false)
-    private Integer labIntIdcliente;
+    @ColumnDefault("'1'")
+    @Column(name = "lab_int_idcliente", nullable = false, length = 30)
+    private String labIntIdcliente;
 
     @Column(name = "lab_dat_fechaintalacion")
     private LocalDate labDatFechaintalacion;
@@ -154,5 +154,25 @@ public class TblLabDispositivosotro {
     @ColumnDefault("0")
     @Column(name = "lab_int_ultimoid", nullable = false)
     private Integer labIntUltimoid;
+
+    @ColumnDefault("''")
+    @Column(name = "lab_inst_ubigeo", length = 10)
+    private String labInstUbigeo;
+
+    @ColumnDefault("''")
+    @Column(name = "lab_censo_latitud", length = 120)
+    private String labCensoLatitud;
+
+    @ColumnDefault("''")
+    @Column(name = "lab_censo_longitud", length = 120)
+    private String labCensoLongitud;
+
+    @ColumnDefault("''")
+    @Column(name = "lab_censo_ubigeo", length = 10)
+    private String labCensoUbigeo;
+
+    @ColumnDefault("0")
+    @Column(name = "lab_vch_contador_desconexiones", nullable = false)
+    private Integer labVchContadorDesconexiones;
 
 }

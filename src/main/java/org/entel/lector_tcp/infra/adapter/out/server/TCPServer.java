@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.entel.lector_tcp.app.ports.out.DeviceService;
 import org.entel.lector_tcp.domain.models.Device;
 import org.entel.lector_tcp.domain.models.Position;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +27,7 @@ public class TCPServer implements CommandLineRunner {
     private final DeviceService deviceService;  // Interfaz DeviceService inyectada aquí
     private final Set<Device> authorizedIMEIs = new HashSet<>();
     private final Map<Device, List<Position>> imeiPositions = new HashMap<>();
-
+    private final Logger logger = LoggerFactory.getLogger(TCPServer.class);
     @Override
     public void run(String... args) throws Exception {
         startServer();
@@ -37,11 +39,11 @@ public class TCPServer implements CommandLineRunner {
             System.out.println("Servidor TCP escuchando en el puerto " + PORT);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("Cliente conectado desde " + clientSocket.getInetAddress());
+                logger.info("Cliente conectado desde {}", clientSocket.getInetAddress());
                 new Thread(() -> handleClientConnection(clientSocket)).start();
             }
         } catch (IOException e) {
-            System.out.println("Error al iniciar el servidor: " + e.getMessage());
+            logger.warn("Error al iniciar el servidor: {}", e.getMessage());
         }
     }
 
@@ -59,7 +61,7 @@ public class TCPServer implements CommandLineRunner {
             }
 
         } catch (IOException e) {
-            System.out.println("Error al comunicarse con el cliente: " + e.getMessage());
+            logger.warn("Error al comunicarse con el cliente: {}", e.getMessage());
         } finally {
             displayPositionMap();
             closeClientSocket(clientSocket);
@@ -77,7 +79,7 @@ public class TCPServer implements CommandLineRunner {
         if (device != null) {
             out.println("#AL#1");
             logSentMessage("#AL#1");
-            System.out.println("Cliente autenticado con IMEI: " + device.getImei());
+            logger.info("Cliente autenticado con IMEI: {}", device.getImei());
             return device;
         }
         return null;
@@ -109,17 +111,17 @@ public class TCPServer implements CommandLineRunner {
             try {
                 Position position = deviceService.decodePositionWialon(device, inputLine); // Uso de DeviceService para decodificar
                 if (position != null) {
-                    System.out.println("Datos decodificados para " + device.getImei() + ": " + position);
+                    logger.info("Datos decodificados para {}: {}", device.getImei(), position);
                     storePositionData(device, position); // Almacena la posición usando Device como clave
 
                     String dataResponse = "#AD#1";
                     out.println(dataResponse); // Responde con #AD#1 para confirmar recepción
                     logSentMessage(dataResponse);
                 } else {
-                    System.out.println("Error al decodificar el mensaje: " + inputLine);
+                    logger.warn("Error al decodificar el mensaje: {}", inputLine);
                 }
             } catch (Exception e) {
-                System.out.println("Error en la decodificación");
+                logger.debug("Error en la decodificación");
             }
         }
     }
@@ -129,7 +131,7 @@ public class TCPServer implements CommandLineRunner {
         String response = "No autenticado: IMEI no autorizado";
         out.println(response);
         logSentMessage(response);
-        System.out.println("Cliente no autorizado");
+        logger.warn("Cliente no autorizado");
     }
 
     // Almacena la posición en el mapa para el Device correspondiente
@@ -150,23 +152,23 @@ public class TCPServer implements CommandLineRunner {
         try {
             if (clientSocket != null && !clientSocket.isClosed()) {
                 clientSocket.close();
-                System.out.println("Socket del cliente cerrado.");
+                logger.debug("Socket del cliente cerrado.");
             }
         } catch (IOException e) {
-            System.out.println("Error al cerrar el socket del cliente: " + e.getMessage());
+            logger.warn("Error al cerrar el socket del cliente: {}", e.getMessage());
         }
     }
 
     // Registra un mensaje recibido junto con una marca de tiempo
     private void logReceivedMessage(String message) {
         String timestamp = dateFormat.format(new Date());
-        System.out.println(timestamp + ": [<<<] " + message);
+        logger.info("{}: [<<<] {}", timestamp, message);
     }
 
     // Registra un mensaje enviado junto con una marca de tiempo
     private void logSentMessage(String message) {
         String timestamp = dateFormat.format(new Date());
-        System.out.println(timestamp + ": [>>>] " + message);
+        logger.info("{}: [>>>] {}", timestamp, message);
     }
 
     // Muestra el contenido del mapa de posiciones en formato de tabla
@@ -176,8 +178,8 @@ public class TCPServer implements CommandLineRunner {
             Device device = entry.getKey();
             List<Position> positions = entry.getValue();
 
-            System.out.println("IMEI: " + device.getImei());
-            System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------");
+            logger.info("IMEI: {}", device.getImei());
+            logger.info("------------------------------------------------------------------------------------------------------------------------------------------------");
             System.out.printf("%-10s %-20s %-20s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-10s %-20s%n",
                     "|Protocol", "|Server Time", "|Device Time", "|Fix Time", "|Outdated", "|Valid", "|Latitude", "|Longitude", "|Altitude", "|Speed", "|Course", "|Address", "|Accuracy", "|Geofence IDs");
             System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------");

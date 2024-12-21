@@ -2,7 +2,47 @@
   "properties": [
     {
       "name": "server.tcp.port",
-      "type": "java.lang.String",
+      "type": "java.lang.Integer",
       "description": "Puerto de servidor tcp"
-  }
-] }
+    },
+    {
+      "name": "spring.datasource.url",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.url."
+    },
+    {
+      "name": "spring.datasource.username",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.username."
+    },
+    {
+      "name": "spring.datasource.password",
+      "type": "java.lang.String",
+      "description": "Description for spring.datasource.password."
+    },
+    {
+      "name": "spring.jpa.properties.hibernate.dialect",
+      "type": "java.lang.String",
+      "description": "Description for spring.jpa.properties.hibernate.dialect."
+    },
+    {
+      "name": "spring.jpa.show-sql",
+      "type": "java.lang.String",
+      "description": "Description for spring.jpa.show-sql."
+    },
+    {
+      "name": "spring.jpa.hibernate.ddl-auto",
+      "type": "java.lang.String",
+      "description": "Description for spring.jpa.hibernate.ddl-auto."
+    },
+    {
+      "name": "logging.level.org.springframework",
+      "type": "java.lang.String",
+      "description": "Description for logging.level.org.springframework."
+    },
+    {
+      "name": "spring.application.name",
+      "type": "java.lang.String",
+      "description": "Description for spring.application.name."
+    }
+  ] }
