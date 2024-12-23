@@ -177,8 +177,9 @@ public class TCPServer implements CommandLineRunner {
         for (Map.Entry<Device, List<Position>> entry : imeiPositions.entrySet()) {
             Device device = entry.getKey();
             List<Position> positions = entry.getValue();
+            if(device.getImei() != null){
+                logger.info("IMEI: {}", device.getImei());
 
-            logger.info("IMEI: {}", device.getImei());
             logger.info("------------------------------------------------------------------------------------------------------------------------------------------------");
             System.out.printf("%-10s %-20s %-20s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-10s %-20s%n",
                     "|Protocol", "|Server Time", "|Device Time", "|Fix Time", "|Outdated", "|Valid", "|Latitude", "|Longitude", "|Altitude", "|Speed", "|Course", "|Address", "|Accuracy", "|Geofence IDs");
@@ -202,6 +203,7 @@ public class TCPServer implements CommandLineRunner {
                         position.getGeofenceIds() != null ? position.getGeofenceIds().toString() : "N/A");
             }
             System.out.println();
+            }
         }
     }
 }

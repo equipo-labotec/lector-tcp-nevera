@@ -1,6 +1,7 @@
 package org.entel.lector_tcp.infra.adapter.input.impl;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.entel.lector_tcp.app.ports.input.repository.DeviceRepository;
 import org.entel.lector_tcp.domain.models.Device;
 import org.entel.lector_tcp.infra.adapter.input.mapper.DeviceMapper;
@@ -8,6 +9,7 @@ import org.entel.lector_tcp.infra.adapter.input.repository.DeviceEntityRepositor
 import org.entel.lector_tcp.infra.adapter.input.repository.TblLabDispositivosotroRepository;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @AllArgsConstructor
 @Component
 public class DeviceRepositoryI implements DeviceRepository {
@@ -29,6 +31,7 @@ public class DeviceRepositoryI implements DeviceRepository {
         device.setProtocolVersion(protocol);
         device.setPassword(password);
         device.setCrc16Login(crc16Login);
+        System.out.println(device.toString());
         return device;
     }
     private Object handlerNotFound(){
