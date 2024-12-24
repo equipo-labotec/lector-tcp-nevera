@@ -1,6 +1,6 @@
-package org.entel.lector_tcp.infra.adapter.input.mapper;
+package org.entel.lector_tcp.infra.database.mapper;
 
-import org.entel.lector_tcp.infra.adapter.input.entity.DeviceEntity;
+import org.entel.lector_tcp.infra.database.entity.DeviceEntity;
 import org.entel.lector_tcp.domain.models.Device;
 import org.mapstruct.Mapper;
 

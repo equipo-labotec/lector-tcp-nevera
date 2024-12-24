@@ -1,7 +1,7 @@
 package org.entel.lector_tcp.infra.seeder;
 
-import org.entel.lector_tcp.infra.adapter.input.entity.DeviceEntity;
-import org.entel.lector_tcp.infra.adapter.input.repository.DeviceEntityRepositoryJPA;
+import org.entel.lector_tcp.infra.database.entity.DeviceEntity;
+import org.entel.lector_tcp.infra.database.repository.DeviceEntityRepositoryJPA;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 

@@ -1,11 +1,11 @@
-package org.entel.lector_tcp.infra.adapter.input.impl;
+package org.entel.lector_tcp.infra.database.adapter.repo;
 
 import lombok.AllArgsConstructor;
 import org.entel.lector_tcp.app.ports.input.repository.NeverasRepository;
 import org.entel.lector_tcp.domain.models.NeverasDataPacket;
-import org.entel.lector_tcp.infra.adapter.input.entity.NeverasDataPacketEntity;
-import org.entel.lector_tcp.infra.adapter.input.mapper.NeverasDataPacketMapper;
-import org.entel.lector_tcp.infra.adapter.input.repository.NeverasDataPacketEntityRepositoryJPA;
+import org.entel.lector_tcp.infra.database.entity.NeverasDataPacketEntity;
+import org.entel.lector_tcp.infra.database.mapper.NeverasDataPacketMapper;
+import org.entel.lector_tcp.infra.database.repository.NeverasDataPacketEntityRepositoryJPA;
 import org.springframework.stereotype.Component;
 
 @AllArgsConstructor

@@ -1,4 +1,4 @@
-package org.entel.lector_tcp.infra.adapter.input.entity;
+package org.entel.lector_tcp.infra.database.entity;
 
 
 

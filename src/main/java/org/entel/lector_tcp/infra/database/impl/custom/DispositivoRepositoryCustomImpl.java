@@ -1,4 +1,4 @@
-package org.entel.lector_tcp.infra.adapter.input.impl.custom;
+package org.entel.lector_tcp.infra.database.impl.custom;
 
 
 import jakarta.persistence.EntityManager;
@@ -6,7 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.StoredProcedureQuery;
 import lombok.AllArgsConstructor;
 import org.entel.lector_tcp.domain.dto.TransferenciaDTO;
-import org.entel.lector_tcp.infra.adapter.input.entity.Dispositivo;
+import org.entel.lector_tcp.infra.database.entity.Dispositivo;
 import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

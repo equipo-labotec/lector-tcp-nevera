@@ -1,9 +1,9 @@
-package org.entel.lector_tcp.infra.adapter.input.impl;
+package org.entel.lector_tcp.infra.database.adapter.repo;
 
 import lombok.AllArgsConstructor;
 import org.entel.lector_tcp.app.ports.input.repository.DispositivoRepository;
 import org.entel.lector_tcp.domain.dto.TransferenciaDTO;
-import org.entel.lector_tcp.infra.adapter.input.impl.custom.DispositivoRepositoryJPA;
+import org.entel.lector_tcp.infra.database.impl.custom.DispositivoRepositoryJPA;
 import org.springframework.stereotype.Component;
 
 @AllArgsConstructor

@@ -1,4 +1,4 @@
-package org.entel.lector_tcp.infra.adapter.out.server;
+package org.entel.lector_tcp.infra.server;
 
 import lombok.AllArgsConstructor;
 import org.entel.lector_tcp.app.ports.out.DeviceService;
@@ -18,6 +18,8 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.entel.lector_tcp.app.constant.StatusLogin.*;
+
 @Component
 @AllArgsConstructor
 public class TCPServer implements CommandLineRunner {
@@ -36,7 +38,7 @@ public class TCPServer implements CommandLineRunner {
     // Inicia el servidor TCP y acepta conexiones de clientes
     public void startServer() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Servidor TCP escuchando en el puerto " + PORT);
+            logger.info("Servidor TCP escuchando en el puerto " + PORT);
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 logger.info("Cliente conectado desde {}", clientSocket.getInetAddress());
@@ -52,13 +54,10 @@ public class TCPServer implements CommandLineRunner {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
              PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-            Device device = authenticateClient(in, out); // Autentica y obtiene el Device completo
+            Optional<Device> device = authenticateClient(in, out); // Autentica y obtiene el Device completo
 
-            if (device != null) {
-                processClientData(in, out, device); // Procesa los datos usando Device
-            } else {
-                rejectUnauthorizedClient(out); // Rechaza el cliente no autorizado
-            }
+            if (device.isPresent()) processClientData(in, out, device.get()); // Procesa los datos usando Device
+
 
         } catch (IOException e) {
             logger.warn("Error al comunicarse con el cliente: {}", e.getMessage());
@@ -69,37 +68,56 @@ public class TCPServer implements CommandLineRunner {
     }
 
     // Autentica al cliente y devuelve el Device si está autorizado
-    private Device authenticateClient(BufferedReader in, PrintWriter out) throws IOException {
+    private Optional<Device> authenticateClient(BufferedReader in, PrintWriter out) throws IOException {
         String inputLine = in.readLine();
         logReceivedMessage(inputLine);
 
         String imei = extractIMEI(inputLine);
-        Device device = getOrAuthenticateDevice(imei);
+        String password = extractPassword(inputLine);
 
-        if (device != null) {
-            out.println("#AL#1");
-            logSentMessage("#AL#1");
-            logger.info("Cliente autenticado con IMEI: {}", device.getImei());
-            return device;
+        // Obtener o autenticar dispositivo
+        Optional<Device> device = getOrAuthenticateDevice(imei);
+
+        // Si no se encuentra el dispositivo
+        if (device.isEmpty()) {
+            out.println(NO_AUTHORIZED); // El dispositivo no está autorizado
+            return Optional.empty(); // Terminamos la ejecución
         }
-        return null;
+
+        // Si se encontró el dispositivo, verificar la contraseña
+        if (!PASSWORD_OK.equals(password)) {
+            out.println(PASSWORD_ERROR); // Contraseña incorrecta
+            logger.warn("Contraseña inválida para IMEI: {}", imei);
+            return Optional.empty(); // Terminamos la ejecución
+        }
+
+        // Autenticación exitosa
+        out.println(OK);
+        logSentMessage(OK);
+        logger.info("Cliente autenticado con IMEI: {}", imei);
+        return device;
     }
 
     // Obtiene el Device desde el caché o lo autentica si no está en el caché
-    private Device getOrAuthenticateDevice(String imei) {
-        // Buscar el dispositivo en el conjunto autorizado
-        for (Device authorizedDevice : authorizedIMEIs) {
-            if (authorizedDevice.getImei().equals(imei)) {
-                return authorizedDevice;
-            }
+    private Optional<Device> getOrAuthenticateDevice(String imei) {
+        // Buscar el dispositivo en el caché
+        Optional<Device> cachedDevice = authorizedIMEIs.stream()
+                .filter(device -> device.getImei().equals(imei))
+                .findFirst();
+
+        if (cachedDevice.isPresent()) {
+            return cachedDevice; // Devolver el dispositivo del caché
         }
 
         // Si no está en el caché, se llama al servicio para obtener el Device
-        Device device = deviceService.findByImei(imei);
-        if (device != null) {
-            authorizedIMEIs.add(device); // Añadir al caché
-        }
-        return device;
+        return deviceService.findByImei(imei)
+                .map(device -> {
+                    synchronized (authorizedIMEIs) {
+                        // Añadir al caché si no está ya presente
+                        authorizedIMEIs.add(device);
+                    }
+                    return device;
+                });
     }
 
     // Procesa los datos del cliente autenticado y responde a cada paquete recibido
@@ -118,6 +136,8 @@ public class TCPServer implements CommandLineRunner {
                     out.println(dataResponse); // Responde con #AD#1 para confirmar recepción
                     logSentMessage(dataResponse);
                 } else {
+                    String dataResponseError = "#AL#0";
+                    out.println(dataResponseError); // Responde con #AD#1 para confirmar recepción
                     logger.warn("Error al decodificar el mensaje: {}", inputLine);
                 }
             } catch (Exception e) {
@@ -128,7 +148,7 @@ public class TCPServer implements CommandLineRunner {
 
     // Rechaza al cliente si no está autorizado
     private void rejectUnauthorizedClient(PrintWriter out) {
-        String response = "No autenticado: IMEI no autorizado";
+        String response = "#AL#01";
         out.println(response);
         logSentMessage(response);
         logger.warn("Cliente no autorizado");
@@ -141,11 +161,29 @@ public class TCPServer implements CommandLineRunner {
 
     // Extrae el IMEI del mensaje si está presente
     private String extractIMEI(String message) {
-        if (message != null && message.contains(";")) {
-            return message.split(";")[0].replace("#L#", "");
+        if (message != null && message.startsWith("#L#")) {
+            // Partir la cadena en base al delimitador ";"
+            String[] parts = message.split(";");
+            if (parts.length > 1) {
+                // El IMEI es el segundo campo en el paquete
+                return parts[1];
+            }
         }
         return null;
     }
+    // Extrae el password del mensaje si está presente
+    private String extractPassword(String message) {
+        if (message != null && message.startsWith("#L#")) {
+            // Partir la cadena en base al delimitador ";"
+            String[] parts = message.split(";");
+            if (parts.length > 2) {
+                // El password es el tercer campo en el paquete
+                return parts[2];
+            }
+        }
+        return null; // Retorna null si no está presente
+    }
+
 
     // Cierra el socket del cliente de manera segura
     private void closeClientSocket(Socket clientSocket) {
@@ -180,29 +218,29 @@ public class TCPServer implements CommandLineRunner {
             if(device.getImei() != null){
                 logger.info("IMEI: {}", device.getImei());
 
-            logger.info("------------------------------------------------------------------------------------------------------------------------------------------------");
-            System.out.printf("%-10s %-20s %-20s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-10s %-20s%n",
-                    "|Protocol", "|Server Time", "|Device Time", "|Fix Time", "|Outdated", "|Valid", "|Latitude", "|Longitude", "|Altitude", "|Speed", "|Course", "|Address", "|Accuracy", "|Geofence IDs");
-            System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------");
+                logger.info("------------------------------------------------------------------------------------------------------------------------------------------------");
+                System.out.printf("%-10s %-20s %-20s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-10s %-20s%n",
+                        "|Protocol", "|Server Time", "|Device Time", "|Fix Time", "|Outdated", "|Valid", "|Latitude", "|Longitude", "|Altitude", "|Speed", "|Course", "|Address", "|Accuracy", "|Geofence IDs");
+                System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------");
 
-            for (Position position : positions) {
-                System.out.printf("%-10s %-20s %-20s %-20s %-10s %-10s %-10.6f %-10.6f %-10.2f %-10.2f %-10.2f %-20s %-10.2f %-20s%n",
-                        position.getProtocol(),
-                        position.getServerTime(),
-                        position.getDeviceTime(),
-                        position.getFixTime(),
-                        position.isOutdated(),
-                        position.isValid(),
-                        position.getLatitude(),
-                        position.getLongitude(),
-                        position.getAltitude(),
-                        position.getSpeed(),
-                        position.getCourse(),
-                        position.getAddress(),
-                        position.getAccuracy(),
-                        position.getGeofenceIds() != null ? position.getGeofenceIds().toString() : "N/A");
-            }
-            System.out.println();
+                for (Position position : positions) {
+                    System.out.printf("%-10s %-20s %-20s %-20s %-10s %-10s %-10.6f %-10.6f %-10.2f %-10.2f %-10.2f %-20s %-10.2f %-20s%n",
+                            position.getProtocol(),
+                            position.getServerTime(),
+                            position.getDeviceTime(),
+                            position.getFixTime(),
+                            position.isOutdated(),
+                            position.isValid(),
+                            position.getLatitude(),
+                            position.getLongitude(),
+                            position.getAltitude(),
+                            position.getSpeed(),
+                            position.getCourse(),
+                            position.getAddress(),
+                            position.getAccuracy(),
+                            position.getGeofenceIds() != null ? position.getGeofenceIds().toString() : "N/A");
+                }
+                System.out.println();
             }
         }
     }

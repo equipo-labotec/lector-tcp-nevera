@@ -1,4 +1,4 @@
-package org.entel.lector_tcp.infra.adapter.input.impl.custom;
+package org.entel.lector_tcp.infra.database.impl.custom;
 
 
 

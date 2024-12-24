@@ -4,7 +4,9 @@ import org.entel.lector_tcp.app.mapper.NestleDataPacketMapper;
 import org.entel.lector_tcp.domain.models.Device;
 import org.entel.lector_tcp.domain.models.Position;
 
+import java.util.Optional;
+
 public interface DeviceService {
     Position decodePositionWialon(Device device, Object message);
-    Device findByImei(String imei);
+    Optional<Device> findByImei(String imei);
 }

@@ -1,6 +1,6 @@
-package org.entel.lector_tcp.infra.adapter.input.mapper;
+package org.entel.lector_tcp.infra.database.mapper;
 
-import org.entel.lector_tcp.infra.adapter.input.entity.NeverasDataPacketEntity;
+import org.entel.lector_tcp.infra.database.entity.NeverasDataPacketEntity;
 import org.entel.lector_tcp.domain.models.NeverasDataPacket;
 import org.mapstruct.Mapper;
 

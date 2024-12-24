@@ -1,4 +1,4 @@
-package org.entel.lector_tcp.infra.adapter.input.entity;
+package org.entel.lector_tcp.infra.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @Table(name = "tbl_lab_dispositivosotros")
-public class TblLabDispositivosotro {
+public class DispositivosOtros {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "lab_int_codigo", nullable = false)

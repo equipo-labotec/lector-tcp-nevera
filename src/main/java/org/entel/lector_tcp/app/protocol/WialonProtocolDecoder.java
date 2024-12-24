@@ -120,15 +120,12 @@ public class WialonProtocolDecoder {
                 }
             }
         }
-        //System.out.println(position.toString());
-        //deviceClient.createDevice(position);
 
         return position;
     }
 
     public String getTypeMessage(Object msg){
         String sentence = (String) msg;
-        //System.out.println("LGOIN ?? = " + msg);
         Parser parser = new Parser(PATTERN_ANY, sentence);
         if (!parser.matches()) {
             return null;
@@ -158,35 +155,19 @@ public class WialonProtocolDecoder {
         Position position;
 
         switch (type) {
-
-            case "L":
+            case "L" -> {
                 String[] values = data.split(";");
                 String imei = values[0].indexOf('.') >= 0 ? values[1] : values[0];
-                /*
-                deviceSession = getDeviceSession(, remoteAddress, imei);
-                if (deviceSession != null) {
-                    sendResponse(, remoteAddress, type, 1);
-                }*/
-                break;
-
-            case "P":
-                /*
-                sendResponse(, remoteAddress, type, null); // heartbeat
-
-                 */
-                break;
-
-            case "D":
-            case "SD":
-
+            }
+            case "P" -> {
+            }
+            case "D", "SD" -> {
                 position = decodePosition(data);
                 if (position != null) {
-                    //sendResponse(, remoteAddress, "D", 1);
                     return position;
                 }
-                break;
-
-            case "B":
+            }
+            case "B" -> {
                 String[] messages = data.split("\\|");
                 List<Position> positions = new LinkedList<>();
 
@@ -202,22 +183,13 @@ public class WialonProtocolDecoder {
                 if (!positions.isEmpty()) {
                     return positions;
                 }
-                break;
-
-            case "M":
-                //deviceSession = getDeviceSession(chanel , remoteAddress, id);
-                //if (deviceSession != null) {
+            }
+            case "M" -> {
                 position = new Position("wialon");
-                //getLastLocation(position, new Date());
                 position.setValid(false);
                 position.set(KEYS.KEY_RESULT, data);
-                //sendResponse(, remoteAddress, type, 1);
                 return position;
-            //}
-
-            default:
-                break;
-
+            }
         }
 
         return null;

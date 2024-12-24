@@ -10,8 +10,11 @@ import org.entel.lector_tcp.app.protocol.WialonProtocolDecoder;
 import org.entel.lector_tcp.domain.models.Device;
 import org.entel.lector_tcp.domain.models.NeverasDataPacket;
 import org.entel.lector_tcp.domain.models.Position;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.Optional;
 
 @AllArgsConstructor
 public class DeviceServiceI implements DeviceService {
@@ -20,27 +23,47 @@ public class DeviceServiceI implements DeviceService {
     private final NeverasRepository neverasRepository;
     private final WialonProtocolDecoder wialonProtocolDecoder = new WialonProtocolDecoder();
     private final NestleDataPacketMapper nestleDataPacketMapper = new NestleDataPacketMapper();
+    private final Logger logger = LoggerFactory.getLogger(DeviceServiceI.class);
 
     @Override
     public Position decodePositionWialon(Device device, Object message) {
         String typeMessageDecode = wialonProtocolDecoder.getTypeMessage(message);
-        System.out.println(typeMessageDecode.toString());
-        String dataMessage = wialonProtocolDecoder.getDataMessage(message);
-        System.out.println(dataMessage.toString());
-        Position position = (Position) wialonProtocolDecoder.decode(typeMessageDecode , dataMessage); //si aqui devuelve null como lo pdoria manejar en el servidor para que no haga nada ?
-        System.out.println(position.toString());
-        // Si la posición es null, se omite el procesamiento
-        if (position != null) {
+        logger.info("Tipo de mensaje recibido: {}", typeMessageDecode);
 
+        String dataMessage = wialonProtocolDecoder.getDataMessage(message);
+        logger.debug("Datos del mensaje recibidos: {}", dataMessage);
+
+        // Intentar decodificar la posición
+        Position position = (Position) wialonProtocolDecoder.decode(typeMessageDecode , dataMessage);
+
+        if (position == null) {
+            // Registrar cuando la posición es nula (no se puede decodificar)
+            logger.warn("La decodificación de la posición ha fallado. El mensaje no es válido.");
+            return null; // No procesar nada si la posición es nula
+        }
+
+        // Log cuando la posición ha sido decodificada correctamente
+        logger.info("Posición decodificada correctamente: {}", position);
+
+        // Si la posición no es nula, procesar los datos
+        try {
             NeverasDataPacket neverasDataPacket = nestleDataPacketMapper.map(position);
             neverasDataPacket.setDeviceCredentials(device);
+            logger.debug("Paquete de datos de nevera mapeado: {}", neverasDataPacket);
+
+            // Manejar la posición
             handlerPosition(device, neverasDataPacket);
+            logger.info("Posición manejada correctamente para el dispositivo con IMEI: {}", device.getImei());
+        } catch (Exception e) {
+            // Log de error si ocurre alguna excepción en el procesamiento
+            logger.error("Error procesando los datos de posición para el dispositivo con IMEI: {}", device.getImei(), e);
         }
+
         return position;
     }
 
     @Override
-    public Device findByImei(String imei){
+    public Optional<Device> findByImei(String imei){
         return deviceRepository.getDeviceByImei(imei);
     }
 
